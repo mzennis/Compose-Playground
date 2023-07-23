@@ -3,14 +3,14 @@ package com.pandaways.chatz.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,8 +58,9 @@ fun ChatScreenPreview() {
                         "Hi Branch, good. You?",
                         ChatUiModel.Author("-1", "Tree"))
                 ),
-                sender = ChatUiModel.Author("0", "Branch")
+                addressee = ChatUiModel.Author("0", "Branch")
             ),
+            onSendChatClickListener = {},
             modifier = Modifier
         )
     }
@@ -67,34 +69,43 @@ fun ChatScreenPreview() {
 @Composable
 fun ChatScreen(
     model: ChatUiModel,
+    onSendChatClickListener: (String) -> Unit,
     modifier: Modifier
 ) {
-    ConstraintLayout(modifier = modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    ConstraintLayout(modifier = modifier.fillMaxSize()) {
         val (messages, chatBox) = createRefs()
 
-        LazyColumn(modifier = Modifier
-            .fillMaxWidth()
-            .constrainAs(messages) {
-                top.linkTo(parent.top)
-                bottom.linkTo(chatBox.top)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-                height = Dimension.fillToConstraints
-            }
+        val listState = rememberLazyListState()
+        LaunchedEffect(model.messages.size) {
+            listState.animateScrollToItem(model.messages.size)
+        }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(messages) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(chatBox.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    height = Dimension.fillToConstraints
+                },
+            contentPadding = PaddingValues(16.dp)
         ) {
             items(model.messages) { item ->
                 ChatItem(item)
             }
         }
-        ChatBox(modifier = Modifier
-            .fillMaxWidth()
-            .constrainAs(chatBox) {
-                bottom.linkTo(parent.bottom)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-            })
+        ChatBox(
+            onSendChatClickListener,
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(chatBox) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+        )
     }
 }
 
@@ -105,20 +116,17 @@ fun ChatItem(message: ChatUiModel.Message) {
         .padding(4.dp)) {
         Box(
             modifier = Modifier
-                .align(if (message.author.isFromMe) Alignment.End else Alignment.Start)
+                .align(if (message.isFromMe) Alignment.End else Alignment.Start)
                 .clip(
-                    AbsoluteRoundedCornerShape(
-                        topLeftPercent = 50,
-                        topRightPercent = 50,
-                        bottomLeftPercent = if (message.author.isFromMe) 50 else 0,
-                        bottomRightPercent = if (message.author.isFromMe) 0 else 50
+                    RoundedCornerShape(
+                        topStart = 48f,
+                        topEnd = 48f,
+                        bottomStart = if (message.isFromMe) 48f else 0f,
+                        bottomEnd = if (message.isFromMe) 0f else 48f
                     )
                 )
                 .background(PurpleGrey80)
                 .padding(16.dp)
-                .wrapContentSize(
-                    if (message.author.isFromMe) Alignment.TopEnd else Alignment.TopEnd
-                )
         ) {
             Text(text = message.text)
         }
@@ -127,13 +135,16 @@ fun ChatItem(message: ChatUiModel.Message) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatBox(modifier: Modifier) {
-    var text by remember { mutableStateOf(TextFieldValue("")) }
-    Row(modifier = modifier) {
+fun ChatBox(
+    onSendChatClickListener: (String) -> Unit,
+    modifier: Modifier
+) {
+    var chatBoxValue by remember { mutableStateOf(TextFieldValue("")) }
+    Row(modifier = modifier.padding(16.dp)) {
         TextField(
-            value = text,
+            value = chatBoxValue,
             onValueChange = { newText ->
-                text = newText
+                chatBoxValue = newText
             },
             modifier = Modifier
                 .weight(1f)
@@ -149,7 +160,12 @@ fun ChatBox(modifier: Modifier) {
             }
         )
         IconButton(
-            onClick = { /*TODO*/ },
+            onClick = {
+                val msg = chatBoxValue.text
+                if (msg.isBlank()) return@IconButton
+                onSendChatClickListener(chatBoxValue.text)
+                chatBoxValue = TextFieldValue("")
+            },
             modifier = Modifier
                 .clip(CircleShape)
                 .background(color = PurpleGrey80)
