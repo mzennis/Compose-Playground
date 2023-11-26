@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="glance_appwidget_label">Glance Widget</string>
+    <string name="glance_app_widget_desc">This is an glance widget description</string>
+
+    <string name="zen_quotes_app_widget_label">Zen Quotes Widget</string>
+    <string name="zen_quotes_app_widget_desc">A daily reminder for inspiration and growth</string>
+</resources>
