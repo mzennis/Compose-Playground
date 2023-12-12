@@ -21,6 +21,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -116,7 +117,7 @@ fun MainContent(uiState: UiState, dispatch: (MainIntent) -> Unit) {
         Spacer(modifier = Modifier
             .fillMaxWidth()
             .height(1.dp)
-            .background(color = Color.LightGray))
+            .background(color = MaterialTheme.colorScheme.surfaceVariant))
         AppInformationUi(
             lastUpdated = uiState.lastUpdated,
             appId = uiState.appId,
@@ -291,11 +292,16 @@ fun AppInformationUi(
             }
             pop()
         }
-        ClickableText(text = openExchangeRatesStr, style = MaterialTheme.typography.bodyLarge, onClick = { offset ->
-            openExchangeRatesStr.getStringAnnotations(tag = "doc", start = offset, end = offset).firstOrNull()?.let {
-                dispatch.invoke(MainIntent.OpenLink(it.item))
+        ClickableText(
+            text = openExchangeRatesStr,
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+            onClick = { offset ->
+                openExchangeRatesStr.getStringAnnotations(tag = "doc", start = offset, end = offset)
+                    .firstOrNull()?.let {
+                    dispatch.invoke(MainIntent.OpenLink(it.item))
+                }
             }
-        })
+        )
         Spacer(modifier = Modifier
             .fillMaxWidth()
             .height(16.dp))
@@ -329,11 +335,16 @@ fun AppInformationUi(
             }
             pop()
         }
-        ClickableText(text = creatorStr, style = MaterialTheme.typography.bodyLarge, onClick = { offset ->
-            creatorStr.getStringAnnotations(tag = "author", start = offset, end = offset).firstOrNull()?.let {
-                dispatch.invoke(MainIntent.OpenLink(it.item))
+        ClickableText(
+            text = creatorStr,
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+            onClick = { offset ->
+                creatorStr.getStringAnnotations(tag = "author", start = offset, end = offset)
+                    .firstOrNull()?.let {
+                        dispatch.invoke(MainIntent.OpenLink(it.item))
+                    }
             }
-        })
+        )
         Spacer(modifier = Modifier
             .fillMaxWidth()
             .height(16.dp))
@@ -346,11 +357,19 @@ fun AppInformationUi(
             }
             pop()
         }
-        ClickableText(text = completeSourceCodeStr, style = MaterialTheme.typography.bodyLarge, onClick = { offset ->
-            completeSourceCodeStr.getStringAnnotations(tag = "source-code", start = offset, end = offset).firstOrNull()?.let {
-                dispatch.invoke(MainIntent.OpenLink(it.item))
+        ClickableText(
+            text = completeSourceCodeStr,
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+            onClick = { offset ->
+                completeSourceCodeStr.getStringAnnotations(
+                    tag = "source-code",
+                    start = offset,
+                    end = offset
+                ).firstOrNull()?.let {
+                    dispatch.invoke(MainIntent.OpenLink(it.item))
+                }
             }
-        })
+        )
     }
 }
 
